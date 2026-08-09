@@ -1,23 +1,8 @@
 #!/usr/bin/env bash
 #
-# Copyright 2026 Hunan Yijing Technologies Co., Ltd
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# LinuxEnv Helper - jdk.sh
+# License: Apache License 2.0
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  📝 模块描述 : Java JDK 环境配置模块
-#  📁 文件路径 : modules/jdk.sh
-#  👤 作者信息 : mingy
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # ═══════════════════════════════════════════════════════════════
@@ -26,11 +11,8 @@
 
 readonly JVM_INSTALL_BASE="/usr/lib/jvm"
 readonly JDK_ENV_FILE="/etc/profile.d/jdk.sh"
-readonly YIJINGLAB_API_URL="https://study.yijinglab.com/api/tools/oss/tempurl"
 readonly OPENJDK_MIRROR_BASE="https://mirrors.huaweicloud.com/openjdk"
 readonly JDK_BINARIES=("java" "javac" "keytool" "jar" "jarsigner")
-
-CLIENT_KEY_FILE="${CLIENT_KEY_FILE:-/etc/yijinglab_client_key}"
 
 readonly ORACLE_JDK_VERSIONS=("jdk1.8.0_421" "jdk-11.0.24" "jdk-17.0.12" "jdk-21.0.4" "jdk-22.0.2" "jdk-23.0.1")
 readonly ORACLE_JDK_NAMES=("jdk-8u421-linux-x64.tar.gz" "jdk-11.0.24_linux-x64_bin.tar.gz" "jdk-17.0.12_linux-x64_bin.tar.gz" "jdk-21.0.4_linux-x64_bin.tar.gz" "jdk-22.0.2_linux-x64_bin.tar.gz" "jdk-23_linux-x64_bin.tar.gz")
@@ -55,7 +37,7 @@ config_jdk() {
         case $choice in
             0) return ;;
             q|Q) exit 0 ;;
-            1) push_path "安装OracleJDK"; config_jdk_oracle_source; ret=$?; pop_path; [[ $ret -eq 255 ]] && continue ;;
+            1) push_path "安装OracleJDK"; install_oracle_keyfree; ret=$?; pop_path; [[ $ret -eq 255 ]] && continue ;;
             2) push_path "安装OpenJDK"; config_jdk_openjdk; pop_path; continue ;;
             3) switch_jdk ;;
             4) remove_jdk ;;
@@ -64,29 +46,6 @@ config_jdk() {
         esac
 
         pause
-    done
-}
-
-# ═══════════════════════════════════════════════════════════════
-# OracleJDK 安装源选择（免密钥 / 教学平台）
-# ═══════════════════════════════════════════════════════════════
-
-config_jdk_oracle_source() {
-    while true; do
-        show_submenu "OracleJDK安装源" \
-            "公共镜像/官网 (免密钥)" \
-            "教学平台 (需要客户端密钥)"
-
-        local src
-        msg_prompt "请选择 [1-2, 0返回, q退出]" "src"
-
-        case $src in
-            0) return 255 ;;
-            q|Q) exit 0 ;;
-            1) install_oracle_keyfree; return ;;
-            2) install_oracle_from_yijinglab; return ;;
-            *) msg_error "无效选择" ;;
-        esac
     done
 }
 
@@ -148,171 +107,6 @@ install_oracle_keyfree() {
 
     configure_jdk_env "$jdk_dir"
     msg_success "JDK 安装完成: $("$jdk_dir/bin/java" -version 2>&1 | head -1)"
-}
-
-# ═══════════════════════════════════════════════════════════════
-# OracleJDK配置
-# ═══════════════════════════════════════════════════════════════
-
-validate_client_key() {
-    local token="$1"
-    local test_file="test"
-
-    msg_info "正在验证客户端密钥..."
-    local resp
-    resp=$(curl -s -X POST \
-        -H "Content-Type: application/json" \
-        -d "{\"token\":\"$token\",\"tempUrl\":\"$test_file\"}" \
-        "$YIJINGLAB_API_URL" 2>/dev/null)
-
-    if [[ -z $resp ]]; then
-        msg_error "无法连接到验证服务器，请检查网络"
-        return 1
-    fi
-
-    local success code msg
-    success=$(echo "$resp" | jq -r '.success' 2>/dev/null)
-    code=$(echo "$resp" | jq -r '.code' 2>/dev/null)
-    msg=$(echo "$resp" | jq -r '.msg' 2>/dev/null)
-
-    if [[ "$success" == "true" ]] || [[ "$code" == "15010005" ]]; then
-        msg_success "客户端密钥验证通过"
-        return 0
-    else
-        case $code in
-            15010004) msg_error "密钥无效, 请登录study.yijinglab.com获取最新密钥" ;;
-            *) msg_error "密钥验证失败: ${msg:-未知错误} (错误码: ${code:-未知})" ;;
-        esac
-        return 1
-    fi
-}
-
-install_oracle_from_yijinglab() {
-    push_path "study.yijinglab.com"
-    show_section "从yijinglab安装OracleJDK"
-
-    local client_key=""
-
-    if [[ -f $CLIENT_KEY_FILE ]]; then
-        client_key=$(cat "$CLIENT_KEY_FILE" 2>/dev/null | xargs)
-        if [[ -n $client_key ]]; then
-            msg_info "检测到已保存的客户端密钥，正在验证可用性..."
-            if validate_client_key "$client_key"; then
-                msg_success "已保存的客户端密钥验证通过，直接使用"
-            else
-                msg_warning "已保存的客户端密钥已失效，请重新输入"
-                client_key=""
-                sudo rm -f "$CLIENT_KEY_FILE"
-            fi
-        fi
-    fi
-
-    if [[ -z $client_key ]]; then
-        while true; do
-            msg_info "请前往教学平台获取您的客户端密钥:"
-            msg_star "获取路径: 教学平台 ➜ 我的班级 ➜ 课程云盘 ➜ 客户端密钥"
-            msg_star "平台链接: ${CYAN}https://study.yijinglab.com${NC}"
-            echo ""
-            msg_prompt "请输入客户端密钥" "client_key"
-
-            if [[ -z $client_key ]]; then
-                msg_error "客户端密钥不能为空"
-                if ! confirm "是否重新输入密钥?"; then
-                    pop_path
-                    return 255
-                fi
-                continue
-            fi
-
-            if validate_client_key "$client_key"; then
-                if echo "$client_key" | sudo tee "$CLIENT_KEY_FILE" >/dev/null; then
-                    sudo chmod 600 "$CLIENT_KEY_FILE"
-                    msg_info "客户端密钥已保存至 $CLIENT_KEY_FILE"
-                fi
-                break
-            else
-                if ! confirm "是否重新输入密钥?"; then
-                    pop_path
-                    return 255
-                fi
-            fi
-        done
-    fi
-
-    echo ""
-    show_submenu "OracleJDK版本选择" "${ORACLE_JDK_LABELS[@]}"
-    local version
-    msg_prompt "请选择版本 [1-6, 0返回, q退出]" "version"
-
-    if [[ $version == "q" || $version == "Q" ]]; then
-        exit 0
-    fi
-
-    if [[ $version == "0" ]]; then
-        pop_path
-        return 255
-    fi
-
-    local ret=0
-    if [[ $version =~ ^[0-9]+$ ]] && [[ $version -ge 1 && $version -le 6 ]]; then
-        local index=$((version - 1))
-        local jdk_ver=${ORACLE_JDK_VERSIONS[$index]}
-        local jdk_name=${ORACLE_JDK_NAMES[$index]}
-
-        msg_info "正在获取${jdk_name}的下载链接..."
-        local download_url
-        download_url=$(get_yijinglab_download_url "$client_key" "$jdk_name")
-
-        if [[ -n $download_url ]]; then
-            install_manual_jdk_package "$download_url" "$jdk_name" "$jdk_ver"
-            ret=$?
-        else
-            ret=1
-        fi
-    else
-        msg_error "无效选择"
-        ret=1
-    fi
-
-    pop_path
-    return $ret
-}
-
-get_yijinglab_download_url() {
-    local token="$1"
-    local exe_name="$2"
-
-    local resp
-    resp=$(curl -s -X POST \
-        -H "Content-Type: application/json" \
-        -d "{\"token\":\"$token\",\"tempUrl\":\"$exe_name\"}" \
-        "$YIJINGLAB_API_URL" 2>/dev/null)
-
-    if [[ -z $resp ]]; then
-        return 1
-    fi
-
-    local success temp_url
-    success=$(echo "$resp" | jq -r '.success' 2>/dev/null)
-    temp_url=$(echo "$resp" | jq -r '.tempUrl' 2>/dev/null)
-
-    if [[ "$success" == "true" ]] && [[ -n $temp_url ]]; then
-        echo "$temp_url"
-        return 0
-    fi
-
-    local code msg
-    code=$(echo "$resp" | jq -r '.code' 2>/dev/null)
-    msg=$(echo "$resp" | jq -r '.msg' 2>/dev/null)
-
-    case $code in
-        15010004) msg_error "未通过验证，请先登录获取客户端密钥" ;;
-        15010005) msg_error "请求内容异常" ;;
-        15010001) msg_error "参数不正确" ;;
-        *) msg_error "获取下载链接失败: ${msg:-未知错误}" ;;
-    esac
-
-    return 1
 }
 
 install_manual_jdk_package() {

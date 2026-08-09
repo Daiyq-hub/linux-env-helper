@@ -1,23 +1,8 @@
 #!/usr/bin/env bash
 #
-# Copyright 2026 Hunan Yijing Technologies Co., Ltd
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# LinuxEnv Helper - install.sh
+# License: Apache License 2.0
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  📝 模块描述 : 一键安装与全局命令注册工具
-#  📁 文件路径 : install.sh
-#  👤 作者信息 : mingy
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 set -euo pipefail
@@ -79,7 +64,7 @@ if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
 fi
 
 CURRENT_DIR=$(dirname "$SCRIPT_PATH")
-INSTALL_DIR="/opt/LinuxEnvConfig"
+INSTALL_DIR="/opt/linux-env-helper"
 BIN_PATH="/usr/local/bin/leh"
 
 IS_LOCAL=false
@@ -109,7 +94,7 @@ else
         rm -rf "$INSTALL_DIR"
     fi
     msg_info "正在从远程仓库克隆项目代码..."
-    git clone https://gitee.com/yijingsec/LinuxEnvConfig.git "$INSTALL_DIR" 2>&1 | sed 's/^/  /'
+    git clone https://github.com/Daiyq-hub/linux-env-helper.git "$INSTALL_DIR" 2>&1 | sed 's/^/  /'
 fi
 
 msg_info "正在创建全局命令: ${BRIGHT_WHITE}${BIN_PATH}${NC} ..."

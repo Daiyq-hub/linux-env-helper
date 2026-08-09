@@ -1,23 +1,8 @@
 #!/usr/bin/env bash
 #
-# Copyright 2026 Hunan Yijing Technologies Co., Ltd
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# LinuxEnv Helper - ohmyzsh.sh
+# License: Apache License 2.0
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  📝 模块描述 : Oh My Zsh 环境美化与增强配置模块
-#  📁 文件路径 : modules/ohmyzsh.sh
-#  👤 作者信息 : mingy
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -129,7 +114,7 @@ config_ohmyzsh_plugin() {
     if [[ -d "${plugin_dir}" ]]; then
         msg_success "语法高亮插件已存在"
     else
-        git clone --depth 1 https://gitee.com/yijingsec/zsh-syntax-highlighting.git "${plugin_dir}" 2>&1 | sed 's/^/  /'
+    git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${plugin_dir}" 2>&1 | sed 's/^/  /'
         action "克隆语法高亮插件成功" "克隆语法高亮插件失败"
     fi
 
@@ -138,7 +123,7 @@ config_ohmyzsh_plugin() {
     if [[ -d "${plugin_dir}" ]]; then
         msg_success "自动建议插件已存在"
     else
-        git clone --depth 1 https://gitee.com/yijingsec/zsh-autosuggestions.git "${plugin_dir}" 2>&1 | sed 's/^/  /'
+    git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions.git "${plugin_dir}" 2>&1 | sed 's/^/  /'
         action "克隆自动建议插件成功" "克隆自动建议插件失败"
     fi
 

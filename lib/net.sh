@@ -1,23 +1,8 @@
 #!/usr/bin/env bash
 #
-# Copyright 2026 Hunan Yijing Technologies Co., Ltd
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# LinuxEnv Helper - net.sh
+# License: Apache License 2.0
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  📝 模块描述 : 网络连通性检测与镜像源管理
-#  📁 文件路径 : lib/network.sh
-#  👤 作者信息 : mingy
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -215,7 +200,7 @@ show_network_troubleshooting() {
 # ═══════════════════════════════════════════════════════════════
 
 get_remote_version() {
-    local api_url="https://gitee.com/api/v5/repos/yijingsec/LinuxEnvConfig/tags"
+    local api_url="https://api.github.com/repos/Daiyq-hub/linux-env-helper/tags"
     local response
     response=$(curl -fsSL --max-time 10 "$api_url" 2>/dev/null || echo "")
     if [[ -z "$response" ]]; then
@@ -239,13 +224,13 @@ check_project_update() {
     if [[ -d "$SCRIPT_DIR/.git" ]] && command_exists git; then
         local current_branch
         current_branch=$(git -c safe.directory="*" -C "$SCRIPT_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
-        if [[ "$current_branch" != "master" && -n "$current_branch" ]]; then
+        if [[ "$current_branch" != "main" && "$current_branch" != "master" && -n "$current_branch" ]]; then
             msg_info "当前处于开发分支[${current_branch}]，已跳过版本更新检测"
             return 0
         fi
 
         msg_info "通过Git检查项目更新..."
-        local repo_url="https://gitee.com/yijingsec/LinuxEnvConfig.git"
+        local repo_url="https://github.com/Daiyq-hub/linux-env-helper.git"
         local remote_latest
         remote_latest=$(git -c safe.directory="*" ls-remote "$repo_url" HEAD 2>/dev/null | cut -f1 || true)
         local local_current
@@ -309,11 +294,11 @@ update_project_tarball() {
     temp_dir=$(mktemp -d)
 
     if curl -fsSL -o "$temp_dir/update.tar.gz" \
-        "https://gitee.com/yijingsec/LinuxEnvConfig/repository/archive/${version}.tar.gz" 2>/dev/null; then
+        "https://codeload.github.com/Daiyq-hub/linux-env-helper/tar.gz/refs/tags/${version}" 2>/dev/null; then
 
         tar -xzf "$temp_dir/update.tar.gz" -C "$temp_dir"
 
-        cp -r "$temp_dir"/LinuxEnvConfig-*/* "$SCRIPT_DIR/"
+        cp -r "$temp_dir"/linux-env-helper-*/* "$SCRIPT_DIR/"
 
         msg_success "更新完成! 请重新运行脚本"
         rm -rf "$temp_dir"
@@ -445,4 +430,3 @@ update_kali_gpg_key() {
     msg_warning "GPG密钥更新失败, 可能不影响正常使用"
     return 1
 }
-
