@@ -6,19 +6,12 @@
 
 面向**国内网络环境**的 Ubuntu / Debian 服务器一键配置工具，交互式中文菜单，开箱即用。
 
-在 [LinuxEnvConfig](https://gitee.com/yijingsec/LinuxEnvConfig)（Apache 2.0）模块化架构基础上优化扩展而来：
-
-- 保留原 22 个实用模块（APT 源 / JDK / Miniconda3 / Docker / 漏洞靶场 / 渗透工具等）
-- 新增「系统优化」模块：时区、BBR 性能优化、SSH 安全加固
-- JDK 支持免密钥安装（华为云镜像 / Oracle 官网 NFTC 下载）
-- 安装命令 `leh`，与上游 `lec` 互不冲突
-
 ## ✨ 功能特性
 
 | 类别 | 说明 |
 |------|------|
 | 🧰 基础环境 | 时区 / DNS / SSH / APT 国内源一键切换 |
-| ☕ 开发环境 | JDK（Oracle / OpenJDK）、Miniconda3 + conda / pip 国内源 |
+| ☕ 开发环境 | JDK（Oracle / OpenJDK，免密钥安装）、Miniconda3 + conda / pip 国内源 |
 | 🐳 容器化 | Docker + Compose 安装、国内镜像加速 |
 | 🛡️ 安全加固 | fail2ban、SSH 端口修改、禁用密码登录（带防锁死检查） |
 | ⚡ 性能优化 | BBR 拥塞控制、网络 / 文件描述符调优 |
@@ -73,7 +66,7 @@ sudo bash main.sh
 | 20 | 配置XingRin | XingRin 平台 |
 | 21 | 配置DeepAudit | 深度审计 |
 | 22 | 配置ScopeSentry | 资产测绘 |
-| 23 | 系统优化 | 时区 / BBR 性能优化 / SSH 安全加固（新增） |
+| 23 | 系统优化 | 时区 / BBR 性能优化 / SSH 安全加固 |
 
 ## 📁 目录结构
 
@@ -86,13 +79,13 @@ linux-env-helper/
 └── LICENSE             # Apache License 2.0
 ```
 
-## 🔄 与上游 LinuxEnvConfig 的差异
+## 🚀 项目特色
 
 - 新增「系统优化」模块：时区设置、BBR 内核参数优化、SSH 安全加固（fail2ban / 改端口 / 禁用密码登录，带防锁死检查）
-- JDK 模块新增「公共镜像/官网（免密钥）」安装源：JDK 8 走华为云镜像，11/17/21/22/23 走 Oracle 官网 NFTC 下载；教学平台密钥仍作为可选项保留
-- 安装命令注册为 `leh`，避免与 LinuxEnvConfig 的 `lec` 冲突
-- 修复 install.sh 可执行权限问题（仓库内以 755 提交）
-- 不包含上游仓库的截图等素材文件，仅保留代码与文档；上游完整内容请访问原仓库
+- JDK 免密钥安装：JDK 8 走华为云镜像，11 / 17 / 21 / 22 / 23 走 Oracle 官网 NFTC 下载
+- 全局命令 `leh`，安装后可在任意目录直接使用
+- `install.sh` 以 755 权限提交，克隆后即可直接执行
+- 仓库仅包含代码与文档，无冗余素材
 
 ## ❓ 常见问题
 
@@ -102,7 +95,7 @@ A: 安装脚本创建的是 `/usr/local/bin/leh`，新开终端即可生效；�
 
 **Q: 安装 JDK 需要密钥吗？**
 
-A: 不需要。选择「公共镜像/官网（免密钥）」即可安装 Oracle JDK 8/11/17/21/22/23；教学平台密钥仅作为可选来源保留。
+A: 不需要。选择「公共镜像/官网（免密钥）」即可安装 Oracle JDK 8 / 11 / 17 / 21 / 22 / 23。
 
 **Q: 换源或安装软件很慢 / 失败？**
 
@@ -111,10 +104,6 @@ A: 国内网络下优先选择腾讯云 / 阿里云镜像；Docker 镜像加速�
 **Q: Docker 命令需要 sudo？**
 
 A: 安装脚本已将当前用户加入 docker 组，重新登录后生效（或执行 `newgrp docker`）。
-
-**Q: 和 LinuxEnvConfig 的 `lec` 冲突吗？**
-
-A: 不冲突。本项目使用 `leh` 命令，两者可共存。
 
 **Q: BBR 没生效？**
 
@@ -132,4 +121,4 @@ A: 执行后一般立即生效，可用 `sysctl -n net.ipv4.tcp_congestion_contr
 
 ## 📄 License
 
-Apache License 2.0。上游代码版权归湖南蚁景科技有限公司及其作者 mingy 所有，本仓库保留原始版权声明与 LICENSE 文件。
+Apache License 2.0，详见 [LICENSE](LICENSE) 文件。
