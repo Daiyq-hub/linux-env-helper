@@ -177,8 +177,8 @@ init_config() {
 
     show_banner_rich \
         "🐧 $SCRIPT_NAME v$SCRIPT_VERSION" \
-        "适用系统: Ubuntu / Kali Linux" \
-        "脚本作用: Linux 基础环境配置 " \
+        "适用系统: Ubuntu / Debian" \
+        "脚本作用: Linux 环境一键配置" \
         "✨ 面向国内网络的轻量环境配置工具 ✨" \
         60 1
     

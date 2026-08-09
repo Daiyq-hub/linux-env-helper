@@ -52,21 +52,21 @@ readonly BOLD="${COLORS[bold]}"
 export RED GREEN YELLOW BLUE MAGENTA CYAN GRAY WHITE BRIGHT_RED BRIGHT_GREEN BRIGHT_YELLOW BRIGHT_BLUE BRIGHT_MAGENTA BRIGHT_CYAN BRIGHT_WHITE NC BOLD
 
 # ═══════════════════════════════════════════════════════════════
-# 消息输出
+# 消息输出（符号化风格）
 # ═══════════════════════════════════════════════════════════════
 
-msg_info()     { echo -e "  ${BLUE}[INFO]${NC} $1" >&2; }
-msg_error()    { echo -e "  ${RED}[FAIL]${NC} $1" >&2; }
-msg_success()  { echo -e "  ${GREEN}[ OK ]${NC} $1" >&2; }
-msg_warning()  { echo -e "  ${YELLOW}[WARN]${NC} $1" >&2; }
-msg_question() { echo -e "  [ ${MAGENTA}??${NC} ] $1" >&2; }
-msg_star()     { echo -e "  ${BRIGHT_YELLOW}*${NC} $1" >&2; }
+msg_info()     { echo -e "  ${BLUE}ℹ${NC} $1" >&2; }
+msg_error()    { echo -e "  ${RED}✘${NC} $1" >&2; }
+msg_success()  { echo -e "  ${GREEN}✔${NC} $1" >&2; }
+msg_warning()  { echo -e "  ${YELLOW}⚠${NC} $1" >&2; }
+msg_question() { echo -e "  ${MAGENTA}?${NC} $1" >&2; }
+msg_star()     { echo -e "  ${BRIGHT_YELLOW}→${NC} $1" >&2; }
 
 msg_prompt() {
     local prompt_text="$1"
     local target_var="${2:-choice}"
     local _input_val=""
-    read -r -p "  ${BRIGHT_MAGENTA}➤${NC} ${BRIGHT_CYAN}${prompt_text}: ${NC}" _input_val
+    read -r -p "  ${BRIGHT_MAGENTA}❯${NC} ${BRIGHT_CYAN}${prompt_text}: ${NC}" _input_val
     printf -v "$target_var" "%s" "$_input_val"
 }
 
@@ -88,7 +88,7 @@ confirm() {
     local prompt="${1:-确认执行此操作?}"
     local response
     while true; do
-        read -r -p "  [ ${MAGENTA}??${NC} ] ${BOLD}${WHITE}${prompt}${NC} [y/N]: " response
+        read -r -p "  ${MAGENTA}?${NC} ${BOLD}${WHITE}${prompt}${NC} [y/N]: " response
         case "$response" in
             [Yy]*|[Yy][Ee][Ss]) return 0 ;;
             [Nn]*|[Nn][Oo]|"") return 1 ;;
@@ -111,10 +111,9 @@ action() {
 }
 
 pause() {
-    local msg="${1:-按任意键继续...}"
+    local msg="${1:-按回车键继续...}"
     echo "" >&2
-    read -r -n 1 -p "  ${WHITE}${msg}${NC}"
-    echo "" >&2
+    read -r -p "  ${WHITE}${msg}${NC}"
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -127,8 +126,7 @@ get_term_width() {
 
 str_display_width() {
     local s="$1"
-    local chars cjk
-    local plain
+    local plain chars cjk
     plain=$(printf '%s' "$s" | sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g')
     chars=$(printf '%s' "$plain" | wc -m)
     cjk=$(printf '%s' "$plain" | grep -oP '[\x{4e00}-\x{9fff}\x{3000}-\x{303f}\x{ff00}-\x{ffef}]' | wc -l)
@@ -155,9 +153,9 @@ msg_table_row() {
     for ((i = 0; i < ${#cells[@]}; i++)); do
         local c="${cells[$i]}"
         local w="${ws[$i]:-0}"
-        local cw
+        local cw pad
         cw=$(str_display_width "$c")
-        local pad=$((w - cw))
+        pad=$((w - cw))
         [[ $pad -lt 0 ]] && pad=0
         line+="$c$(printf '%*s' "$pad" '')"
     done
@@ -165,7 +163,7 @@ msg_table_row() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# 界面渲染
+# 界面渲染（双线风格）
 # ═══════════════════════════════════════════════════════════════
 
 clear_screen() {
@@ -174,18 +172,17 @@ clear_screen() {
 
 show_section() {
     echo ""
-    echo -e "  ${BOLD}${CYAN}▸ $1${NC}"
-    echo -e "  ${CYAN}────────────────────────────────────────────────────────${NC}"
+    echo -e "  ${BOLD}${CYAN}${1}${NC}"
+    echo -e "  ${GRAY}$(printf '─%.0s' $(seq 1 46))${NC}"
 }
 
 show_header() {
     local title="$1"
-    local width="${2:-60}"
-    local color="${3:-$BRIGHT_GREEN}"
+    local width="${2:-52}"
     echo ""
-    echo -e "  ${GREEN}╭$(printf '─%.0s' $(seq 1 $((width - 2))))╮${NC}"
-    ui_print_centered_row "$width" "${BOLD}${color}" "$title"
-    echo -e "  ${GREEN}╰$(printf '─%.0s' $(seq 1 $((width - 2))))╯${NC}"
+    echo -e "  ${GRAY}$(printf '━%.0s' $(seq 1 "$width"))${NC}"
+    echo -e "  ${BOLD}${BRIGHT_GREEN}  ${title}${NC}"
+    echo -e "  ${GRAY}$(printf '━%.0s' $(seq 1 "$width"))${NC}"
     echo ""
 }
 
@@ -194,51 +191,22 @@ show_banner_rich() {
     local subtitle="${2:-}"
     local desc="${3:-}"
     local footer="${4:-}"
-    local width="${5:-60}"
+    local width="${5:-56}"
 
     echo ""
-    echo -e "  ${GREEN}╭$(printf '─%.0s' $(seq 1 $((width - 2))))╮${NC}"
-    ui_print_centered_row "$width" "${BOLD}${BRIGHT_GREEN}" "$title"
-    [[ -n "$subtitle" ]] && ui_print_centered_row "$width" "${WHITE}" "$subtitle"
-    [[ -n "$desc" ]] && ui_print_centered_row "$width" "${CYAN}" "$desc"
-    [[ -n "$footer" ]] && {
-        echo -e "  ${GREEN}├$(printf '─%.0s' $(seq 1 $((width - 2))))┤${NC}"
-        ui_print_centered_row "$width" "${GRAY}" "$footer"
-    }
-    echo -e "  ${GREEN}╰$(printf '─%.0s' $(seq 1 $((width - 2))))╯${NC}"
+    echo -e "  ${GRAY}$(printf '━%.0s' $(seq 1 "$width"))${NC}"
+    echo -e "  ${BOLD}${BRIGHT_GREEN}  ${title}${NC}"
+    [[ -n "$subtitle" ]] && echo -e "  ${WHITE}  ${subtitle}${NC}"
+    [[ -n "$desc" ]] && echo -e "  ${CYAN}  ${desc}${NC}"
+    echo -e "  ${GRAY}$(printf '━%.0s' $(seq 1 "$width"))${NC}"
+    [[ -n "$footer" ]] && echo -e "  ${GRAY}  ${footer}${NC}"
     echo ""
 }
 
-ui_set_borders() {
-    local width="$1"
-    top_border="$(printf '─%.0s' $(seq 1 $((width - 2))))"
-    mid_border="$(printf '─%.0s' $(seq 1 $((width - 2))))"
-    bottom_border="$(printf '─%.0s' $(seq 1 $((width - 2))))"
-}
-
-ui_print_centered_row() {
-    local width="$1" color="$2" text="$3"
-    local tw cw lp rp
-    tw=$(str_display_width "$text")
-    lp=$(( (width - 2 - tw) / 2 ))
-    rp=$(( width - 2 - tw - lp ))
-    echo -e "  ${GREEN}│${NC}$(printf '%*s' "$lp" '')${color}${text}${NC}$(printf '%*s' "$rp" '')${GREEN}│${NC}"
-}
-
-ui_print_blank_row() {
-    local width="$1"
-    echo -e "  ${GREEN}│${NC}$(printf '%*s' $((width - 2)) '')${GREEN}│${NC}"
-}
-
-ui_print_footer() {
-    local width="$1" left_text="$2" right_text="$3"
-    local lw rw pad
-    lw=$(str_display_width "$left_text")
-    rw=$(str_display_width "$right_text")
-    pad=$((width - 4 - lw - rw))
-    [[ $pad -lt 0 ]] && pad=0
-    echo -e "  ${GREEN}│${NC}  ${left_text}$(printf '%*s' "$pad" '')  ${right_text}  ${GREEN}│${NC}"
-}
+ui_set_borders() { :; }
+ui_print_centered_row() { :; }
+ui_print_blank_row() { :; }
+ui_print_footer() { :; }
 
 ui_render_grid() {
     local cols="$1" item_width="$2" total_width="$3" color="$4"
@@ -247,15 +215,21 @@ ui_render_grid() {
     local count=${#items[@]}
     local rows=$(( (count + cols - 1) / cols ))
     local r c i
+
     for ((r = 0; r < rows; r++)); do
-        local line="  ${GREEN}│${NC}  "
+        local line="  "
         for ((c = 0; c < cols; c++)); do
             i=$((r + c * rows))
             if (( i < count )); then
-                line+="${color}$(printf '%2d. ' "$((i + 1))")${NC}${items[$i]}$(printf '%*s' $((item_width - 4 - $(str_display_width "${items[$i]}") )) '')"
+                local num label iw pad
+                printf -v num "%02d" "$((i + 1))"
+                label="${items[$i]}"
+                iw=$(str_display_width "$label")
+                pad=$((item_width - 5 - iw))
+                [[ $pad -lt 0 ]] && pad=0
+                line+="${color}[${num}]${NC} ${label}$(printf '%*s' "$pad" '')  "
             fi
         done
-        line+="  ${GREEN}│${NC}"
         echo -e "$line"
     done
 }
@@ -290,23 +264,20 @@ _get_menu_path_display() {
 show_main_menu() {
     local items=("${MAIN_MENU_ITEMS[@]}")
     local count=${#items[@]}
-    local i
 
     clear_screen
-    echo ""
     show_banner_rich \
         "🐧 $SCRIPT_NAME v$SCRIPT_VERSION" \
-        "适用系统: Ubuntu / Debian" \
-        "脚本作用: Linux 环境一键配置" \
+        "适用于 Ubuntu / Debian 服务器" \
+        "交互式菜单 · 一键配置 · 命令行模式" \
         "https://github.com/Daiyq-hub/linux-env-helper" \
-        60
+        56
 
-    echo -e "  ${GREEN}────────────────────────────────────────────────────────${NC}"
-    for ((i = 0; i < count; i++)); do
-        printf "  %2d. %s\n" "$((i + 1))" "${items[$i]}"
-    done
-    echo -e "  ${GREEN}────────────────────────────────────────────────────────${NC}"
-    echo -e "  $(_get_menu_path_display)                    ${GREEN}[q] 退出脚本${NC}"
+    echo -e "  ${BOLD}${CYAN}功能模块${NC}"
+    echo -e "  ${GRAY}$(printf '─%.0s' $(seq 1 52))${NC}"
+    ui_render_grid 2 32 66 "${BRIGHT_CYAN}" "${items[@]}"
+    echo -e "  ${GRAY}$(printf '─%.0s' $(seq 1 52))${NC}"
+    echo -e "  $(_get_menu_path_display)    ${GREEN}[q] 退出${NC}"
     echo ""
 }
 
@@ -315,17 +286,14 @@ show_submenu() {
     shift
     local items=("$@")
     local count=${#items[@]}
-    local i
 
     clear_screen
     echo ""
-    show_header "$title" 52
-    for ((i = 0; i < count; i++)); do
-        printf "  %2d. %s\n" "$((i + 1))" "${items[$i]}"
-    done
-    echo ""
-    echo -e "  ${GREEN}────────────────────────────────────────────────${NC}"
-    echo -e "  $(_get_menu_path_display)          ${GREEN}0. 返回上级    [q] 退出脚本${NC}"
+    echo -e "  ${BOLD}${BRIGHT_CYAN}${title}${NC}"
+    echo -e "  ${GRAY}$(printf '─%.0s' $(seq 1 46))${NC}"
+    ui_render_grid 1 42 60 "${BRIGHT_CYAN}" "${items[@]}"
+    echo -e "  ${GRAY}$(printf '─%.0s' $(seq 1 46))${NC}"
+    echo -e "  $(_get_menu_path_display)    ${GREEN}[0] 返回上级   [q] 退出${NC}"
     echo ""
 }
 
