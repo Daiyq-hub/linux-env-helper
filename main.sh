@@ -95,68 +95,54 @@ install_project_deps() {
     fi
 }
 
+_pad_label() {
+    local label="$1" width="$2"
+    local lw pad
+    lw=$(str_display_width "$label")
+    pad=$((width - lw))
+    [[ $pad -lt 0 ]] && pad=0
+    printf "%s%s" "$label" "$(printf '%*s' "$pad" '')"
+}
+
 _show_preconf_summary() {
     local apt_status="$1"
     local deps_status="$2"
     local update_status="$3"
     local gpg_status="${4:-}"
 
-    local total_w=60
-    local border; border=$(printf '─%.0s' $(seq 1 $((total_w - 2))))
-
-    echo ""
-    echo -e "  ${GREEN}╭${border}╮${NC}"
-    
-    local title="⚙  预配置检查结果"
-    local tw; tw=$(str_display_width "$title")
-    local lp=$(( (total_w - 2 - tw) / 2 ))
-    local rp=$(( total_w - 2 - tw - lp ))
-    echo -e "  ${GREEN}│${NC}$(printf '%*s' "$lp" ' ')${BOLD}${BRIGHT_WHITE}${title}${NC}$(printf '%*s' "$rp" ' ')${GREEN}│${NC}"
-    echo -e "  ${GREEN}├${border}┤${NC}"
-
-    _summary_row() {
-        local icon="$1" label="$2" status="$3" color="${4:-${NC}}"
-        local icon_w; icon_w=$(str_display_width "$icon")
-        local label_w; label_w=$(str_display_width "$label")
-        local status_w; status_w=$(str_display_width "$status")
-        
-        local left_text="   ${icon} ${WHITE}${label}${NC}"
-        local left_w=$((3 + icon_w + 1 + label_w))
-        local pad=$((total_w - 2 - left_w - status_w - 3))
-        [[ $pad -lt 0 ]] && pad=0
-        
-        echo -e "  ${GREEN}│${NC}${left_text}$(printf '%*s' "$pad" ' ')${color}${status}${NC}   ${GREEN}│${NC}"
+    _summary_line() {
+        local label="$1" status="$2" color="${3:-$WHITE}"
+        echo -e "  ${WHITE}$(_pad_label "$label" 20)${NC}${color}${status}${NC}"
     }
 
+    echo ""
+    echo -e "  ${BOLD}${BRIGHT_WHITE}预配置检查结果${NC}"
+    echo -e "  ${GRAY}$(printf '─%.0s' $(seq 1 46))${NC}"
     case "$apt_status" in
-        ok)      _summary_row "${BRIGHT_GREEN}✔${NC}" "APT镜像源" "已配置" "${BRIGHT_GREEN}" ;;
-        skip)    _summary_row "${BRIGHT_YELLOW}⏭${NC}" "APT镜像源" "已跳过" "${BRIGHT_YELLOW}" ;;
-        nomod)   _summary_row "${GRAY}─${NC}"          "APT镜像源" "模块未加载" "${GRAY}" ;;
+        ok)    _summary_line "APT镜像源" "已配置 ✔" "${BRIGHT_GREEN}" ;;
+        skip)  _summary_line "APT镜像源" "已跳过" "${BRIGHT_YELLOW}" ;;
+        nomod) _summary_line "APT镜像源" "模块未加载" "${GRAY}" ;;
     esac
-
     case "$deps_status" in
-        ok)      _summary_row "${BRIGHT_GREEN}✔${NC}" "基础工具库" "检查通过" "${BRIGHT_GREEN}" ;;
-        install) _summary_row "${BRIGHT_GREEN}✔${NC}" "基础工具库" "修复成功" "${BRIGHT_GREEN}" ;;
-        fail)    _summary_row "${BRIGHT_RED}✘${NC}"   "基础工具库" "安装失败" "${BRIGHT_RED}" ;;
+        ok)      _summary_line "基础工具库" "检查通过 ✔" "${BRIGHT_GREEN}" ;;
+        install) _summary_line "基础工具库" "修复成功 ✔" "${BRIGHT_GREEN}" ;;
+        fail)    _summary_line "基础工具库" "安装失败 ✘" "${BRIGHT_RED}" ;;
     esac
-
     case "$update_status" in
-        ok)          _summary_row "${BRIGHT_GREEN}✔${NC}" "项目代码状态" "已是最新" "${BRIGHT_GREEN}" ;;
-        updated)     _summary_row "${BRIGHT_GREEN}✔${NC}" "项目代码状态" "更新成功" "${BRIGHT_GREEN}" ;;
-        skip)        _summary_row "${BRIGHT_YELLOW}⏭${NC}" "项目代码状态" "检查跳过" "${BRIGHT_YELLOW}" ;;
-        skip_update) _summary_row "${BRIGHT_YELLOW}⏭${NC}" "项目代码状态" "跳过更新" "${BRIGHT_YELLOW}" ;;
-        fail)        _summary_row "${BRIGHT_YELLOW}⚠${NC}" "项目代码状态" "检查失败" "${BRIGHT_YELLOW}" ;;
+        ok)              _summary_line "项目代码状态" "已是最新 ✔" "${BRIGHT_GREEN}" ;;
+        updated)         _summary_line "项目代码状态" "更新成功 ✔" "${BRIGHT_GREEN}" ;;
+        skip|skip_update) _summary_line "项目代码状态" "检查跳过" "${BRIGHT_YELLOW}" ;;
+        fail)            _summary_line "项目代码状态" "检查失败" "${BRIGHT_YELLOW}" ;;
     esac
-
     if [[ -n "$gpg_status" ]]; then
         case "$gpg_status" in
-            ok)      _summary_row "${BRIGHT_GREEN}✔${NC}" "Kali GPG" "密钥已更新" "${BRIGHT_GREEN}" ;;
-            noop)    _summary_row "${BRIGHT_GREEN}✔${NC}" "Kali GPG" "无需操作" "${BRIGHT_GREEN}" ;;
-            fail)    _summary_row "${BRIGHT_YELLOW}⚠${NC}" "Kali GPG" "更新失败" "${BRIGHT_YELLOW}" ;;
+            ok)   _summary_line "Kali GPG" "密钥已更新 ✔" "${BRIGHT_GREEN}" ;;
+            noop) _summary_line "Kali GPG" "无需操作" "${BRIGHT_GREEN}" ;;
+            fail) _summary_line "Kali GPG" "更新失败" "${BRIGHT_YELLOW}" ;;
         esac
     fi
-
-    echo -e "  ${GREEN}╰${border}╯${NC}"
+    echo -e "  ${GRAY}$(printf '─%.0s' $(seq 1 46))${NC}"
+    echo ""
 }
 
 init_config() {
@@ -182,56 +168,9 @@ init_config() {
         "✨ 面向国内网络的轻量环境配置工具 ✨" \
         60 1
     
-    local entries=(
-        "操作系统:|$os"             "系统架构:|$arch"
-        "系统内存:|$memory"         "磁盘使用:|$disk"
-    )
-
-    local col_w=26
-    for ((i=0; i<${#entries[@]}; i+=2)); do
-        local e1="${entries[i]}"
-        local e2="${entries[i+1]:-}"
-        
-        local line="  ${GREEN}│${NC}  "
-        
-        if [[ -n $e1 ]]; then
-            local n1="${e1%%|*}"
-            local v1="${e1#*|}"
-            local pure_v1
-            pure_v1=$(echo -e "$v1" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g")
-            local w1
-            w1=$(str_display_width "${n1}  ${pure_v1}")
-            local p1=$((col_w - w1))
-            [[ $p1 -lt 0 ]] && p1=0
-            line+="${WHITE}${n1}${NC}  ${v1}$(printf '%*s' "$p1" ' ')"
-        else
-            line+="$(printf '%*s' "$col_w" ' ')"
-        fi
-        
-        line+="  "
-        
-        if [[ -n $e2 ]]; then
-            local n2="${e2%%|*}"
-            local v2="${e2#*|}"
-            local pure_v2
-            pure_v2=$(echo -e "$v2" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g")
-            local w2
-            w2=$(str_display_width "${n2}  ${pure_v2}")
-            local p2=$((col_w - w2))
-            [[ $p2 -lt 0 ]] && p2=0
-            line+="${WHITE}${n2}${NC}  ${v2}$(printf '%*s' "$p2" ' ')"
-        else
-            line+="$(printf '%*s' "$col_w" ' ')"
-        fi
-        
-        line+="  ${GREEN}│${NC}"
-        echo -e "$line"
-    done
-    
-    local total_w=60
-    local border
-    border=$(printf '─%.0s' $(seq 1 $((total_w - 2))))
-    echo -e "  ${GREEN}╰${border}╯${NC}"
+    echo -e "  ${WHITE}$(_pad_label "操作系统" 10)${NC}${os}    ${WHITE}$(_pad_label "系统架构" 10)${NC}${arch}"
+    echo -e "  ${WHITE}$(_pad_label "系统内存" 10)${NC}${memory}    ${WHITE}$(_pad_label "磁盘使用" 10)${NC}${disk}"
+    echo ""
 
     local apt_result="skip" deps_result="ok" update_result="skip" gpg_result=""
 
