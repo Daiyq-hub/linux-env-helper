@@ -212,6 +212,11 @@ config_docker_mirror() {
         "https://dockerproxy.net"
         "https://hub.rat.dev"
         "https://docker.m.ixdev.cn"
+        "https://docker.cattt.net"
+        "https://hub.mirrorify.net"
+        "https://docker.etcd.fun"
+        "https://docker.kejilion.pro"
+        "https://2a6bf1988cb6428c877f723ec7530dbc.mirror.swr.myhuaweicloud.com"
     )
 
     msg_info "正在检测镜像源可用性(请稍候)..."

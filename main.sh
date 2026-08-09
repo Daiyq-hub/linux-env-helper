@@ -70,49 +70,19 @@ load_module() {
 # 加载核心库
 # ═══════════════════════════════════════════════════════════════
 
-load_lib "common"
 load_lib "core"
-load_lib "io"
-load_lib "utils"
-load_lib "network"
-load_lib "menu"
+load_lib "ui"
+load_lib "util"
+load_lib "net"
 
 # ═══════════════════════════════════════════════════════════════
 # 预加载模块（注册主菜单）
 # ═══════════════════════════════════════════════════════════════
 
-CORE_MODULES=(
-    "basic"
-    "apt"
-    "jdk"
-    "miniconda3"
-    "docker"
-    "docker-compose"
-)
-
-LOADED_MODULES=()
-
-for module_name in "${CORE_MODULES[@]}"; do
-    if [[ -f "$SCRIPT_DIR/modules/${module_name}.sh" ]]; then
-        # shellcheck source=/dev/null
-        source "$SCRIPT_DIR/modules/${module_name}.sh"
-        LOADED_MODULES+=("${module_name}.sh")
-    fi
-done
-
-for module_path in "$SCRIPT_DIR"/modules/*.sh; do
+for module_path in "$SCRIPT_DIR"/modules/*/*.sh; do
     [[ -f $module_path ]] || continue
-    module_file=$(basename "$module_path")
-    
-    is_loaded=false
-    for loaded in "${LOADED_MODULES[@]}"; do
-        [[ "$module_file" == "$loaded" ]] && is_loaded=true && break
-    done
-    
-    if [[ "$is_loaded" == false ]]; then
-        # shellcheck source=/dev/null
-        source "$module_path"
-    fi
+    # shellcheck source=/dev/null
+    source "$module_path"
 done
 
 # ═══════════════════════════════════════════════════════════════
@@ -337,32 +307,81 @@ init_config() {
     pause
 }
 
-main() {
-    init_config
-    
-    local choice
-    while true; do
-        show_main_menu
+# ═══════════════════════════════════════════════════════════════
+# 命令行模式（非交互）
+# ═══════════════════════════════════════════════════════════════
 
-        msg_prompt "请选择操作 [1-${#MAIN_MENU_ITEMS[@]}, q退出]"
+show_cli_help() {
+    cat << 'EOF'
+LinuxEnv Helper (leh) - Linux 环境配置助手
 
-        local ret=0
-        handle_main_menu "$choice" || ret=$?
-        
-        if [[ $ret -eq 255 ]]; then
-            break
-        fi
+用法:
+  sudo bash main.sh                 交互式菜单
+  sudo bash main.sh --list          列出全部模块
+  sudo bash main.sh --quick         一键快速初始化(时区/基础工具/Docker/Miniconda3)
+  sudo bash main.sh --help          显示帮助
+EOF
+}
+
+show_cli_modules() {
+    local i
+    for ((i = 0; i < ${#MAIN_MENU_ITEMS[@]}; i++)); do
+        printf "  %2d. %s\n" "$((i + 1))" "${MAIN_MENU_ITEMS[$i]}"
     done
+}
 
-    clear_screen
-    
-    show_banner_rich \
-        "👋 感谢使用 $SCRIPT_NAME" \
-        "作者: LinuxEnv Helper contributors" \
-        "" \
-        "https://github.com/Daiyq-hub/linux-env-helper"
+quick_init_all() {
+    show_section "一键快速初始化"
+    msg_info "依次执行: 时区设置 → 基础工具 → Docker → Miniconda3"
+    set_timezone_cn || true
+    install_project_deps || true
+    install_docker || true
+    install_miniconda3 || true
+    msg_success "一键初始化流程执行完毕"
+    pause
+}
 
-    echo ""
+register_main_menu "一键快速初始化" "quick_init_all"
+
+main() {
+    case "${1:-}" in
+        --help|-h|help)
+            show_cli_help
+            ;;
+        --list|-l)
+            show_cli_modules
+            ;;
+        --quick)
+            quick_init_all
+            ;;
+        *)
+            init_config
+
+            local choice
+            while true; do
+                show_main_menu
+
+                msg_prompt "请选择操作 [1-${#MAIN_MENU_ITEMS[@]}, q退出]"
+
+                local ret=0
+                handle_main_menu "$choice" || ret=$?
+
+                if [[ $ret -eq 255 ]]; then
+                    break
+                fi
+            done
+
+            clear_screen
+
+            show_banner_rich \
+                "👋 感谢使用 $SCRIPT_NAME" \
+                "作者: LinuxEnv Helper contributors" \
+                "" \
+                "https://github.com/Daiyq-hub/linux-env-helper"
+
+            echo ""
+            ;;
+    esac
 }
 
 main "$@"
