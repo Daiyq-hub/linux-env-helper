@@ -70,9 +70,6 @@ for module_path in "$SCRIPT_DIR"/modules/*/*.sh; do
     source "$module_path"
 done
 
-# 主菜单按名称首字母排序
-sort_main_menu
-
 # ═══════════════════════════════════════════════════════════════
 # 环境预配置
 # ═══════════════════════════════════════════════════════════════
@@ -271,6 +268,9 @@ quick_init_all() {
 }
 
 register_main_menu "一键快速初始化" "quick_init_all"
+
+# 主菜单按名称首字母排序（需在所有模块注册完成后执行）
+sort_main_menu
 
 main() {
     case "${1:-}" in
