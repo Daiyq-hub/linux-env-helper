@@ -26,6 +26,9 @@ update_script() {
         is_git=true
         branch=$(git -c safe.directory="*" -C "$SCRIPT_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null | tr -d '\r' || echo main)
         [[ -z "$branch" || "$branch" == "HEAD" ]] && branch="main"
+        local origin_url
+        origin_url=$(git -c safe.directory="*" -C "$SCRIPT_DIR" remote get-url origin 2>/dev/null || true)
+        [[ -n "$origin_url" ]] && repo_url="$origin_url"
     fi
 
     local latest=""
