@@ -53,6 +53,7 @@ sudo bash main.sh --help     # 显示帮助
 正式使用之前（如无需配置）可以直接一直回车快速跳过
 <img width="908" height="915" alt="image" src="https://github.com/user-attachments/assets/c7d64ef8-2b62-4e4b-a39a-83dfb4a8210b" />
 使用界面
+<img width="888" height="590" alt="image" src="https://github.com/user-attachments/assets/1ade9968-4cc5-4d2d-9309-41b5f195a5cc" />
 
 ## 📂 模块一览
 
