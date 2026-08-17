@@ -272,22 +272,26 @@ register_main_menu() {
 
 # ═══════════════════════════════════════════════════════════════
 # 主菜单按名称首字母排序
-#  - "配置Xxx" 按 Xxx 的首字母排序（如 配置ARL → A）
-#  - 中文名称按拼音首字母映射（查看→C / 更新→G / 基础/监控→J / 系统→X / 一键→Y）
+#  - "配置Xxx" 排在前面，按 Xxx 的首字母 A-Z 排序（如 配置ARL → A）
+#  - 中文名称按拼音首字母归到末尾（基础配置 / 监控工具 / 系统优化 / 一键快速初始化 / 更新脚本 / 查看系统信息）
 # ═══════════════════════════════════════════════════════════════
 
 _menu_sort_key() {
     local label="$1"
     local name="${label#配置}"
     local first="${name:0:1}"
-    case "$first" in
-        [A-Za-z]) printf '%s' "$first" | tr 'A-Z' 'a-z' ;;
-        查) printf 'c' ;;
-        更) printf 'g' ;;
-        基|监) printf 'j' ;;
-        系) printf 'x' ;;
-        一) printf 'y' ;;
-        *) printf 'z' ;;
+    if [[ "$name" != "$label" && "$first" =~ [A-Za-z] ]]; then
+        printf '1_%s' "$first" | tr 'A-Z' 'a-z'
+        return
+    fi
+    case "$label" in
+        基础配置)     printf '2_00' ;;
+        监控工具)     printf '2_01' ;;
+        系统优化)     printf '2_02' ;;
+        一键快速初始化) printf '2_03' ;;
+        更新脚本)     printf '2_04' ;;
+        查看系统信息) printf '2_05' ;;
+        *)            printf '2_99' ;;
     esac
 }
 
@@ -301,7 +305,7 @@ sort_main_menu() {
         lines+=("$(_menu_sort_key "$item")|$item|$handler")
     done
 
-    mapfile -t sorted < <(printf '%s\n' "${lines[@]}" | LC_ALL=C sort -f)
+    mapfile -t sorted < <(printf '%s\n' "${lines[@]}" | LC_ALL=C sort -f -t'|' -k1,1 -k2,2)
 
     MAIN_MENU_ITEMS=()
     MAIN_MENU_HANDLERS=()

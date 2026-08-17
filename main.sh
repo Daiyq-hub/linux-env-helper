@@ -12,7 +12,7 @@ set -euo pipefail
 # 版本与项目信息
 # ═══════════════════════════════════════════════════════════════
 
-readonly SCRIPT_VERSION="2.2.2"
+readonly SCRIPT_VERSION="2.2.3"
 readonly SCRIPT_NAME="LinuxEnv Helper"
 readonly REQUIRED_TOOLS=("curl" "wget" "git" "jq" "unzip")
 
