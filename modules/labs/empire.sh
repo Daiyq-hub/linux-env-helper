@@ -74,10 +74,11 @@ install_empire() {
         docker_wait_healthy "${EMPIRE_CONTAINER}" "Empire"
         msg_success "Empire部署完成"
         show_access_info \
-            "服务端地址: http://${host_ip}:1337" \
+            "Web客户端: http://${host_ip}:1337 (Starkiller)" \
             "默认用户名: empireadmin" \
             "默认密码  : password123" \
-            "监听器范围: 6000-6010 (需在Empire中手动开启)"
+            "监听器范围: 6000-6010 (需在Empire中手动开启)" \
+            "终端访问  : REST API (POST /token 登录, /api/v2/* 查询)"
     fi
 }
 
@@ -115,10 +116,11 @@ start_empire() {
 
     if docker_start_container "${EMPIRE_CONTAINER}" "Empire"; then
         show_access_info \
-            "服务端地址: http://${host_ip}:1337" \
+            "Web客户端: http://${host_ip}:1337 (Starkiller)" \
             "默认用户名: empireadmin" \
             "默认密码  : password123" \
-            "监听器范围: 6000-6010 (需在Empire中手动开启)"
+            "监听器范围: 6000-6010 (需在Empire中手动开启)" \
+            "终端访问  : REST API (POST /token 登录, /api/v2/* 查询)"
     fi
 }
 

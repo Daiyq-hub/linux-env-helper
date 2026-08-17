@@ -114,7 +114,9 @@ config_ohmyzsh_plugin() {
     if [[ -d "${plugin_dir}" ]]; then
         msg_success "语法高亮插件已存在"
     else
-    git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${plugin_dir}" 2>&1 | sed 's/^/  /'
+        if ! git clone --depth 1 https://gitee.com/mirrors/zsh-syntax-highlighting.git "${plugin_dir}" >/dev/null 2>&1; then
+            git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${plugin_dir}" >/dev/null 2>&1
+        fi
         action "克隆语法高亮插件成功" "克隆语法高亮插件失败"
     fi
 
@@ -123,7 +125,9 @@ config_ohmyzsh_plugin() {
     if [[ -d "${plugin_dir}" ]]; then
         msg_success "自动建议插件已存在"
     else
-    git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions.git "${plugin_dir}" 2>&1 | sed 's/^/  /'
+        if ! git clone --depth 1 https://gitee.com/mirrors/zsh-autosuggestions.git "${plugin_dir}" >/dev/null 2>&1; then
+            git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions.git "${plugin_dir}" >/dev/null 2>&1
+        fi
         action "克隆自动建议插件成功" "克隆自动建议插件失败"
     fi
 

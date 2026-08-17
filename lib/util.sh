@@ -360,7 +360,7 @@ prompt_host_ip() {
     local default_ip
     default_ip=$(get_best_ip)
     local input_val
-    read -r -p "  ${CYAN}请输入启动${label}的主机地址 [${default_ip}]: ${NC}" input_val
+    read -r -p "  ${CYAN}请输入启动${label}的主机地址 [${default_ip}]: ${NC}" input_val || exit 0
     input_val="${input_val:-$default_ip}"
     if [[ "$do_validate" == "true" ]]; then
         validate_ip "$input_val" || return 1
@@ -371,7 +371,7 @@ prompt_host_ip() {
 prompt_host_port() {
     local label="${1:-服务}" default_port="$2" var_name="${3:-host_port}"
     local input_val
-    read -r -p "  ${CYAN}请输入${label}映射端口 [${default_port}]: ${NC}" input_val
+    read -r -p "  ${CYAN}请输入${label}映射端口 [${default_port}]: ${NC}" input_val || exit 0
     input_val="${input_val:-$default_port}"
     validate_port "$input_val" || return 1
     printf -v "$var_name" "%s" "$input_val"

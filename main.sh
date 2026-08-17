@@ -12,7 +12,7 @@ set -euo pipefail
 # 版本与项目信息
 # ═══════════════════════════════════════════════════════════════
 
-readonly SCRIPT_VERSION="2.1.0"
+readonly SCRIPT_VERSION="2.2.0"
 readonly SCRIPT_NAME="LinuxEnv Helper"
 readonly REQUIRED_TOOLS=("curl" "wget" "git" "jq" "unzip")
 
@@ -242,6 +242,7 @@ LinuxEnv Helper (leh) - Linux 环境配置助手
 用法:
   sudo bash main.sh                 交互式菜单
   sudo bash main.sh --list          列出全部模块
+  sudo bash main.sh --info          查看系统环境信息
   sudo bash main.sh --quick         一键快速初始化(时区/基础工具/Docker/Miniconda3)
   sudo bash main.sh --help          显示帮助
 EOF
@@ -275,10 +276,21 @@ main() {
         --list|-l)
             show_cli_modules
             ;;
+        --info|-i)
+            check_root
+            check_os
+            show_system_info
+            ;;
         --quick)
             quick_init_all
             ;;
         *)
+            if [[ ! -t 0 ]]; then
+                msg_warning "检测到非交互环境（stdin 不是终端）"
+                msg_info "请直接在终端中运行: sudo bash main.sh"
+                msg_info "或使用命令行模式: sudo bash main.sh --list / --info / --quick"
+                exit 0
+            fi
             init_config
 
             local choice

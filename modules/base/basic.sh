@@ -185,7 +185,7 @@ manual_config_dns() {
     msg_info "请输入DNS服务器地址(输入空行结束)"
 
     while true; do
-        read -r -p "  ${CYAN}DNS $(( ${#dns_list[@]} + 1 )): ${NC}" dns
+        read -r -p "  ${CYAN}DNS $(( ${#dns_list[@]} + 1 )): ${NC}" dns || break
 
         [[ -z $dns ]] && break
 

@@ -66,7 +66,7 @@ msg_prompt() {
     local prompt_text="$1"
     local target_var="${2:-choice}"
     local _input_val=""
-    read -r -p "  ${BRIGHT_MAGENTA}❯${NC} ${BRIGHT_CYAN}${prompt_text}: ${NC}" _input_val
+    read -r -p "  ${BRIGHT_MAGENTA}❯${NC} ${BRIGHT_CYAN}${prompt_text}: ${NC}" _input_val || exit 0
     printf -v "$target_var" "%s" "$_input_val"
 }
 
@@ -88,7 +88,7 @@ confirm() {
     local prompt="${1:-确认执行此操作?}"
     local response
     while true; do
-        read -r -p "  ${MAGENTA}?${NC} ${BOLD}${WHITE}${prompt}${NC} [y/N]: " response
+        read -r -p "  ${MAGENTA}?${NC} ${BOLD}${WHITE}${prompt}${NC} [y/N]: " response || exit 0
         case "$response" in
             [Yy]*|[Yy][Ee][Ss]) return 0 ;;
             [Nn]*|[Nn][Oo]|"") return 1 ;;
@@ -113,7 +113,7 @@ action() {
 pause() {
     local msg="${1:-按回车键继续...}"
     echo "" >&2
-    read -r -p "  ${WHITE}${msg}${NC}"
+    read -r -p "  ${WHITE}${msg}${NC}" || exit 0
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -193,13 +193,31 @@ show_banner_rich() {
     local footer="${4:-}"
     local width="${5:-56}"
 
+    local inner=$((width - 4))
+    local top bottom
+    top=$(printf '  ╔'; printf '═%.0s' $(seq 1 "$inner"); printf '╗')
+    bottom=$(printf '  ╚'; printf '═%.0s' $(seq 1 "$inner"); printf '╝')
+
+    _banner_row() {
+        local text="$1" color="${2:-$NC}"
+        local tw pad right
+        tw=$(str_display_width "$text")
+        pad=$(( (inner - tw) / 2 ))
+        [[ $pad -lt 0 ]] && pad=0
+        right=$(( inner - tw - pad ))
+        printf '  ║%s%b%s%b%s║\n' \
+            "$(printf '%*s' "$pad" '')" \
+            "$color" "$text" "$NC" \
+            "$(printf '%*s' "$right" '')"
+    }
+
     echo ""
-    echo -e "  ${GRAY}$(printf '━%.0s' $(seq 1 "$width"))${NC}"
-    echo -e "  ${BOLD}${BRIGHT_GREEN}  ${title}${NC}"
-    [[ -n "$subtitle" ]] && echo -e "  ${WHITE}  ${subtitle}${NC}"
-    [[ -n "$desc" ]] && echo -e "  ${CYAN}  ${desc}${NC}"
-    echo -e "  ${GRAY}$(printf '━%.0s' $(seq 1 "$width"))${NC}"
-    [[ -n "$footer" ]] && echo -e "  ${GRAY}  ${footer}${NC}"
+    echo -e "$top"
+    _banner_row "$title" "${BOLD}${BRIGHT_GREEN}"
+    [[ -n "$subtitle" ]] && _banner_row "$subtitle" "${WHITE}"
+    [[ -n "$desc" ]] && _banner_row "$desc" "${CYAN}"
+    echo -e "$bottom"
+    [[ -n "$footer" ]] && echo -e "  ${GRAY}${footer}${NC}"
     echo ""
 }
 
@@ -339,7 +357,7 @@ handle_main_menu() {
 read_password() {
     local prompt="$1"
     local var_name="$2"
-    read -r -sp "  ${GREEN}->${NC} ${prompt}: " "$var_name"
+    read -r -sp "  ${GREEN}->${NC} ${prompt}: " "$var_name" || exit 0
     echo ""
 }
 
