@@ -12,7 +12,7 @@ set -euo pipefail
 # 版本与项目信息
 # ═══════════════════════════════════════════════════════════════
 
-readonly SCRIPT_VERSION="2.2.1"
+readonly SCRIPT_VERSION="2.2.2"
 readonly SCRIPT_NAME="LinuxEnv Helper"
 readonly REQUIRED_TOOLS=("curl" "wget" "git" "jq" "unzip")
 
@@ -69,6 +69,9 @@ for module_path in "$SCRIPT_DIR"/modules/*/*.sh; do
     # shellcheck source=/dev/null
     source "$module_path"
 done
+
+# 主菜单按名称首字母排序
+sort_main_menu
 
 # ═══════════════════════════════════════════════════════════════
 # 环境预配置

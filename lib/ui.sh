@@ -270,6 +270,49 @@ register_main_menu() {
     MAIN_MENU_HANDLERS+=("$2")
 }
 
+# ═══════════════════════════════════════════════════════════════
+# 主菜单按名称首字母排序
+#  - "配置Xxx" 按 Xxx 的首字母排序（如 配置ARL → A）
+#  - 中文名称按拼音首字母映射（查看→C / 更新→G / 基础/监控→J / 系统→X / 一键→Y）
+# ═══════════════════════════════════════════════════════════════
+
+_menu_sort_key() {
+    local label="$1"
+    local name="${label#配置}"
+    local first="${name:0:1}"
+    case "$first" in
+        [A-Za-z]) printf '%s' "$first" | tr 'A-Z' 'a-z' ;;
+        查) printf 'c' ;;
+        更) printf 'g' ;;
+        基|监) printf 'j' ;;
+        系) printf 'x' ;;
+        一) printf 'y' ;;
+        *) printf 'z' ;;
+    esac
+}
+
+sort_main_menu() {
+    local -a lines sorted
+    local i item handler
+
+    for ((i = 0; i < ${#MAIN_MENU_ITEMS[@]}; i++)); do
+        item="${MAIN_MENU_ITEMS[$i]}"
+        handler="${MAIN_MENU_HANDLERS[$i]}"
+        lines+=("$(_menu_sort_key "$item")|$item|$handler")
+    done
+
+    mapfile -t sorted < <(printf '%s\n' "${lines[@]}" | LC_ALL=C sort -f)
+
+    MAIN_MENU_ITEMS=()
+    MAIN_MENU_HANDLERS=()
+    local line key
+    for line in "${sorted[@]}"; do
+        IFS='|' read -r key item handler <<< "$line"
+        MAIN_MENU_ITEMS+=("$item")
+        MAIN_MENU_HANDLERS+=("$handler")
+    done
+}
+
 _get_menu_path_display() {
     local path="主菜单"
     local p
