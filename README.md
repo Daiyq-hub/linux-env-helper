@@ -42,6 +42,7 @@ sudo bash bin/leh         # 或通过仓库内启动器
 ```bash
 sudo bash main.sh --list     # 列出全部模块
 sudo bash main.sh --info     # 查看系统环境信息
+sudo bash main.sh --update   # 检查并更新脚本到最新版
 sudo bash main.sh --quick    # 一键快速初始化（时区/基础工具/Docker/Miniconda3）
 sudo bash main.sh --help     # 显示帮助
 ```
@@ -50,7 +51,7 @@ sudo bash main.sh --help     # 显示帮助
 
 ```text
   ╔══════════════════════════════════════════════════════╗
-  ║              🐧 LinuxEnv Helper v2.2.0                ║
+  ║              🐧 LinuxEnv Helper v2.2.1                ║
   ║              适用于 Ubuntu / Debian 服务器             ║
   ║        交互式菜单 · 一键配置 · 命令行模式              ║
   ╚══════════════════════════════════════════════════════╝
@@ -59,6 +60,7 @@ sudo bash main.sh --help     # 显示帮助
   ────────────────────────────────────────────────────────
   [01] 配置APT源          [02] 基础配置
   [03] 配置Docker        [04] 查看系统信息
+  [05] 配置JDK           [06] 更新脚本
   ...
   ↳ 主菜单                     [q] 退出
 ```
@@ -76,6 +78,7 @@ sudo bash main.sh --help     # 显示帮助
 | 配置JDK | OracleJDK（免密钥镜像/官网）、OpenJDK、切换、删除 |
 | 配置Miniconda3 | 安装 / 卸载 / conda / pip 软件源 |
 | 配置OhMyZsh | 安装 / 主题 / 插件（Gitee 加速镜像） |
+| 更新脚本 | 检查并更新到最新版（Git 优先，压缩包回退） |
 
 ### 安全与运维 `modules/sec/`
 

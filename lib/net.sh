@@ -293,8 +293,14 @@ update_project_tarball() {
     local temp_dir
     temp_dir=$(mktemp -d)
 
-    if curl -fsSL -o "$temp_dir/update.tar.gz" \
-        "https://codeload.github.com/Daiyq-hub/linux-env-helper/tar.gz/refs/tags/${version}" 2>/dev/null; then
+    local download_url
+    if [[ -n "$version" ]]; then
+        download_url="https://codeload.github.com/Daiyq-hub/linux-env-helper/tar.gz/refs/tags/${version}"
+    else
+        download_url="https://codeload.github.com/Daiyq-hub/linux-env-helper/tar.gz/refs/heads/main"
+    fi
+
+    if curl -fsSL -o "$temp_dir/update.tar.gz" "$download_url" 2>/dev/null; then
 
         tar -xzf "$temp_dir/update.tar.gz" -C "$temp_dir"
 

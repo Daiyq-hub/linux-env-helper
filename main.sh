@@ -12,7 +12,7 @@ set -euo pipefail
 # 版本与项目信息
 # ═══════════════════════════════════════════════════════════════
 
-readonly SCRIPT_VERSION="2.2.0"
+readonly SCRIPT_VERSION="2.2.1"
 readonly SCRIPT_NAME="LinuxEnv Helper"
 readonly REQUIRED_TOOLS=("curl" "wget" "git" "jq" "unzip")
 
@@ -243,6 +243,7 @@ LinuxEnv Helper (leh) - Linux 环境配置助手
   sudo bash main.sh                 交互式菜单
   sudo bash main.sh --list          列出全部模块
   sudo bash main.sh --info          查看系统环境信息
+  sudo bash main.sh --update        检查并更新脚本到最新版
   sudo bash main.sh --quick         一键快速初始化(时区/基础工具/Docker/Miniconda3)
   sudo bash main.sh --help          显示帮助
 EOF
@@ -280,6 +281,15 @@ main() {
             check_root
             check_os
             show_system_info
+            ;;
+        --update|-u)
+            check_root
+            check_os
+            if [[ -t 0 ]]; then
+                update_script interactive
+            else
+                update_script auto
+            fi
             ;;
         --quick)
             quick_init_all
