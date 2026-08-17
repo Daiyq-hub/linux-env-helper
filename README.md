@@ -48,8 +48,11 @@ sudo bash main.sh --help     # 显示帮助
 ```
 
 ## 🖥️ 界面预览
-
+安装完成后直接leh启动
 <img width="782" height="238" alt="image" src="https://github.com/user-attachments/assets/35d5b13f-0c35-4d7a-9024-da7d7722d68c" />
+正式使用之前（如无需配置）可以直接一直回车快速跳过
+<img width="908" height="915" alt="image" src="https://github.com/user-attachments/assets/c7d64ef8-2b62-4e4b-a39a-83dfb4a8210b" />
+使用界面
 
 ## 📂 模块一览
 
