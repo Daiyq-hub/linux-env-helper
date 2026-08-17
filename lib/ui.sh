@@ -138,7 +138,7 @@ draw_line() {
     local color="${2:-$GRAY}"
     local width="${3:-50}"
     printf "  %b" "$color"
-    printf "${char}%.0s" $(seq 1 "$width")
+    printf -- "${char}%.0s" $(seq 1 "$width")
     printf "%b\n" "$NC"
 }
 
